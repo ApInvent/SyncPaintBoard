@@ -1,0 +1,184 @@
+﻿<Window x:Class="SyncPainBoard.Main"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Main" Height="300" Width="300" MouseMove="Window_OnMouseMove" MouseUp="Window_OnMouseUp" SizeToContent="Width">
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!--Верхнее меню-->
+        <Border BorderThickness="0 1 0 1" BorderBrush="Black">
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <!--Общая часть-->
+                <Grid  Grid.Column="0" HorizontalAlignment="Left">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Border BorderThickness="0 0 1 0" BorderBrush="Black" Padding="10 0 0 0">
+                        <RadioButton GroupName="ClientServer" x:Name="Server" Content="Сервер" VerticalAlignment="Center" Padding="0 0 15 0" Checked="ToggleButton_OnChecked"/>
+                    </Border>
+                    <Border BorderThickness="0 0 1 0" BorderBrush="Black" Grid.Row="1" Padding="10 0 0 0">
+                        <RadioButton GroupName="ClientServer" x:Name="Client" Content="Клиент" VerticalAlignment="Center" Padding="0 0 15 0" Checked="ToggleButton_OnChecked" />
+                    </Border>
+                    <Label Content="IP адрес" Grid.Column="1" VerticalAlignment="Center"/>
+                    <Border Grid.Column="2" BorderBrush="Black" BorderThickness=" 0 0 1 0">
+                        <TextBox Text="{Binding IpAddress, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Margin="10" MinWidth="100">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="IsReadOnly" Value="True"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="Validation.HasError" Value="true">
+                                            <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors).CurrentItem.ErrorContent}" />
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding ElementName=Client, Path=IsChecked}" Value="True">
+                                            <Setter Property="IsReadOnly" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Border>
+                    <Label Content="Порт" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
+                    <Border Grid.Column="2" Grid.Row="1" BorderBrush="Black" BorderThickness="0 0 1 0" >
+                        <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Margin="10" MinWidth="50"/>
+                    </Border>
+                </Grid>
+
+                <!--Для сервера-->
+                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Content="Старт" Command="{Binding StartServerCommand}" Grid.Column="2" Margin="5" Padding="5">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsStarted}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="Стоп" Command="{Binding StopServerCommand}" Grid.Column="2" Margin="5" Padding="5">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsStarted}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <TextBlock Text="Клиентов подключено:" Grid.Column="3" Margin="10"/>
+                    <TextBlock Text="{Binding ClientsCount}" Grid.Column="4" Margin="10"/>
+                    <TextBlock TextWrapping="Wrap" Text="{Binding ConnectionError}" Grid.Column="5"/>
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=Server, Path=IsChecked}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+
+                <!--Для клиента-->
+                <Grid Grid.Column="1" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Подключиться" Command="{Binding ConnectToServerCommand}" Margin="5" Padding="5" Grid.Column="1">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsConnected}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="Отключиться" Command="{Binding DisconnectFromServerCommand}" Margin="5" Padding="5" Grid.Column="1">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsConnected}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <TextBlock TextWrapping="Wrap" Text="{Binding ConnectionError}" Grid.Column="2"/>
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Hidden"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=Client, Path=IsChecked}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+
+            </Grid>
+        </Border>
+        
+        <!--Поле для рисования-->
+        <ItemsControl ItemsSource="{Binding Objects}" Grid.Row="1">
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="FrameworkElement">
+                    <Setter Property="Canvas.Left" Value="{Binding Left}" />
+                    <Setter Property="Canvas.Top" Value="{Binding Top}" />
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="Point">
+                    <Rectangle Fill="{Binding Brush}" StrokeThickness="2" Stroke="{Binding BorderBrush}" Width="{Binding Width}" Height="{Binding Width}" MouseLeftButtonDown="RectangleLeftMouseButtonDown" MouseRightButtonDown="RectangleRightMouseDown"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas IsItemsHost="True" Background="Transparent" MouseRightButtonDown="CanvasMouseRightButtonDown"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+    </Grid>
+</Window>
+
+   
